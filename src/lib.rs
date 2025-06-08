@@ -5,6 +5,8 @@ use pumpkin_api_macros::{plugin_impl, plugin_method};
 use pumpkin_util::math::{position::BlockPos, vector3::Vector3};
 use tokio::sync::RwLock;
 
+pub mod utils;
+
 mod commands;
 
 type Selections = HashMap<uuid::Uuid, Selection>;
@@ -21,17 +23,27 @@ async fn fetch_selections(player_uuid: &uuid::Uuid) -> Result<(BlockPos, BlockPo
         if let Some((p1, p2)) = selection.get() {
             Ok((p1, p2))
         } else {
-            Err(CommandError::GeneralCommandIssue("Make a region selection first.".to_string()))
+            Err(CommandError::GeneralCommandIssue(
+                "Make a region selection first.".to_string(),
+            ))
         }
     } else {
-        Err(CommandError::GeneralCommandIssue("Make a region selection first.".to_string()))
+        Err(CommandError::GeneralCommandIssue(
+            "Make a region selection first.".to_string(),
+        ))
     }
 }
 
 fn normalization_selection<T: PartialOrd>(pos1: &mut Vector3<T>, pos2: &mut Vector3<T>) {
-    if pos1.x > pos2.x { std::mem::swap(&mut pos1.x, &mut pos2.x); }
-    if pos1.y > pos2.y { std::mem::swap(&mut pos1.y, &mut pos2.y); }
-    if pos1.z > pos2.z { std::mem::swap(&mut pos1.z, &mut pos2.z); }
+    if pos1.x > pos2.x {
+        std::mem::swap(&mut pos1.x, &mut pos2.x);
+    }
+    if pos1.y > pos2.y {
+        std::mem::swap(&mut pos1.y, &mut pos2.y);
+    }
+    if pos1.z > pos2.z {
+        std::mem::swap(&mut pos1.z, &mut pos2.z);
+    }
 }
 
 #[plugin_method]
@@ -46,17 +58,20 @@ async fn on_load(&mut self, context: &Context) -> Result<(), String> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Selection {
     pos1: Option<BlockPos>,
     pos2: Option<BlockPos>,
 }
 impl Selection {
-    pub fn new() -> Self {
-        Self { pos1: None, pos2: None }
+    #[must_use]
+    pub fn pos1(&self) -> Option<BlockPos> {
+        self.pos1
     }
-    pub fn pos1(&self) -> Option<BlockPos> { self.pos1 }
-    pub fn pos2(&self) -> Option<BlockPos> { self.pos2 }
+    #[must_use]
+    pub fn pos2(&self) -> Option<BlockPos> {
+        self.pos2
+    }
 
     pub fn set_pos1(&mut self, pos: BlockPos) {
         self.pos1 = Some(pos);
@@ -65,6 +80,7 @@ impl Selection {
         self.pos2 = Some(pos);
     }
 
+    #[must_use]
     pub fn get(&self) -> Option<(BlockPos, BlockPos)> {
         if let (Some(pos1), Some(pos2)) = (self.pos1, self.pos2) {
             Some((pos1, pos2))
@@ -73,7 +89,6 @@ impl Selection {
         }
     }
 }
-
 
 #[plugin_impl]
 pub struct MyPlugin {}
@@ -89,4 +104,3 @@ impl Default for MyPlugin {
         Self::new()
     }
 }
-

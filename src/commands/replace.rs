@@ -1,18 +1,18 @@
 use async_trait::async_trait;
-use pumpkin::command::args::block::BlockArgumentConsumer;
-use pumpkin::command::args::ConsumedArgs;
-use pumpkin::command::args::FindArg;
-use pumpkin::command::dispatcher::CommandError;
-use pumpkin::command::tree::builder::argument;
-use pumpkin::command::tree::CommandTree;
 use pumpkin::command::CommandExecutor;
 use pumpkin::command::CommandSender;
+use pumpkin::command::args::ConsumedArgs;
+use pumpkin::command::args::FindArg;
+use pumpkin::command::args::block::BlockArgumentConsumer;
+use pumpkin::command::dispatcher::CommandError;
+use pumpkin::command::tree::CommandTree;
+use pumpkin::command::tree::builder::argument;
 use pumpkin::entity::EntityBase;
 use pumpkin::server::Server;
-use pumpkin_world::world::BlockFlags;
 use pumpkin_util::math::position::BlockPos;
 use pumpkin_util::math::vector3::Vector3;
 use pumpkin_util::text::TextComponent;
+use pumpkin_world::world::BlockFlags;
 
 use crate::normalization_selection;
 
@@ -40,7 +40,8 @@ impl CommandExecutor for SetExecuter {
         let block_from = BlockArgumentConsumer::find_arg(args, ARG_DESC_FROM)?;
         let block_to = BlockArgumentConsumer::find_arg(args, ARG_DESC_TO)?;
 
-        let (mut pos1, mut pos2) = crate::fetch_selections(&player.get_entity().entity_uuid).await?;
+        let (mut pos1, mut pos2) =
+            crate::fetch_selections(&player.get_entity().entity_uuid).await?;
 
         normalization_selection(&mut pos1.0, &mut pos2.0);
 
@@ -57,31 +58,29 @@ impl CommandExecutor for SetExecuter {
                 for z in z1..=z2 {
                     let block_position = BlockPos(Vector3 { x, y, z });
                     if world.get_block_state(&block_position).await.id != block_from.id {
-                        world.set_block_state(
-                            &block_position,
-                            block_to.id,
-                            BlockFlags::FORCE_STATE
-                        ).await;
+                        world
+                            .set_block_state(&block_position, block_to.id, BlockFlags::FORCE_STATE)
+                            .await;
                         cnt += 1;
                     }
                 }
             }
         }
 
-        sender.send_message(TextComponent::text(format!("{} blocks have been changed.", cnt))).await;
+        sender
+            .send_message(TextComponent::text(format!(
+                "{} blocks have been changed.",
+                cnt
+            )))
+            .await;
 
         Ok(())
     }
 }
 
 pub fn init_command_tree() -> CommandTree {
-    CommandTree::new(NAMES, DESCRIPTION)
-        .then(
-            argument(ARG_DESC_FROM, BlockArgumentConsumer)
-            .then(
-                argument(ARG_DESC_TO, BlockArgumentConsumer)
-                    .execute(SetExecuter)
-            )
-        )
+    CommandTree::new(NAMES, DESCRIPTION).then(
+        argument(ARG_DESC_FROM, BlockArgumentConsumer)
+            .then(argument(ARG_DESC_TO, BlockArgumentConsumer).execute(SetExecuter)),
+    )
 }
-

@@ -1,12 +1,12 @@
 use async_trait::async_trait;
-use pumpkin::command::args::position_block::BlockPosArgumentConsumer;
-use pumpkin::command::args::Arg;
-use pumpkin::command::args::ConsumedArgs;
-use pumpkin::command::dispatcher::CommandError;
-use pumpkin::command::tree::builder::argument;
-use pumpkin::command::tree::CommandTree;
 use pumpkin::command::CommandExecutor;
 use pumpkin::command::CommandSender;
+use pumpkin::command::args::Arg;
+use pumpkin::command::args::ConsumedArgs;
+use pumpkin::command::args::position_block::BlockPosArgumentConsumer;
+use pumpkin::command::dispatcher::CommandError;
+use pumpkin::command::tree::CommandTree;
+use pumpkin::command::tree::builder::argument;
 use pumpkin::entity::EntityBase;
 use pumpkin::server::Server;
 use pumpkin_util::math::position::BlockPos;
@@ -37,14 +37,14 @@ impl CommandExecutor for Pos1Executer {
             BlockPos(player.position().to_i32())
         };
 
-        let message = format!("Started new selection with vertex {}.", block_pos.to_string());
+        let message = format!("Started new selection with vertex {}.", block_pos);
         sender.send_message(TextComponent::text(message)).await;
 
         let player_uuid = player.get_entity().entity_uuid;
 
         {
             let mut selections = crate::selections().write().await;
-            let selection = selections.entry(player_uuid).or_insert(crate::Selection::new());
+            let selection = selections.entry(player_uuid).or_default();
             selection.set_pos1(block_pos);
         }
 
@@ -54,10 +54,6 @@ impl CommandExecutor for Pos1Executer {
 
 pub fn init_command_tree() -> CommandTree {
     CommandTree::new(NAMES, DESCRIPTION)
-        .then(
-            argument(ARG_DESC, BlockPosArgumentConsumer)
-                .execute(Pos1Executer)
-        )
+        .then(argument(ARG_DESC, BlockPosArgumentConsumer).execute(Pos1Executer))
         .execute(Pos1Executer)
 }
-
