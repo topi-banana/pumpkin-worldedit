@@ -17,7 +17,7 @@ use pumpkin_util::math::vector2::Vector2;
 use pumpkin_util::math::vector3::Vector3;
 use pumpkin_util::text::TextComponent;
 
-use crate::utils::vector_range::ChunkSplitRange;
+use crate::utils::chunked_range::ChunkedRange;
 
 const NAMES: [&str; 1] = ["/set"];
 
@@ -75,12 +75,12 @@ impl CommandExecutor for SetExecuter {
         }
         */
         // This implementation is a faster version of 👆
-        for (chunk_x, x_range) in ChunkSplitRange::new(x1..=x2) {
-            for (chunk_z, z_range) in ChunkSplitRange::new(z1..=z2) {
+        for (chunk_x, x_range) in ChunkedRange::new(x1..=x2) {
+            for (chunk_z, z_range) in ChunkedRange::new(z1..=z2) {
                 let chunk = world.level.get_chunk(Vector2::new(chunk_x, chunk_z)).await;
                 let mut chunk = chunk.write().await;
                 let mut cnt = 0;
-                for (chunk_y, y_range) in ChunkSplitRange::new(y1..=y2) {
+                for (chunk_y, y_range) in ChunkedRange::new(y1..=y2) {
                     let mut chunk_section = Vec::new();
                     if let Some(section) = chunk.section.sections.get_mut(chunk_y as usize) {
                         for x in x_range.clone() {
