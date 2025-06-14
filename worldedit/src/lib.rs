@@ -1,8 +1,24 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::{
+    collections::HashMap,
+    sync::{Arc, OnceLock},
+};
 
-use pumpkin::{command::dispatcher::CommandError, plugin::Context};
-use pumpkin_api_macros::{plugin_impl, plugin_method};
-use pumpkin_util::math::{position::BlockPos, vector3::Vector3};
+use async_trait::async_trait;
+use pumpkin::{
+    command::dispatcher::CommandError,
+    entity::EntityBase,
+    plugin::{
+        Context, EventHandler, EventPriority,
+        player::player_interact_event::{InteractAction, PlayerInteractEvent},
+    },
+    server::Server,
+};
+use pumpkin_api_macros::{plugin_impl, plugin_method, with_runtime};
+use pumpkin_data::item::Item;
+use pumpkin_util::{
+    math::{position::BlockPos, vector3::Vector3},
+    text::TextComponent,
+};
 use tokio::sync::RwLock;
 
 pub mod utils;
@@ -46,6 +62,47 @@ fn normalization_selection<T: PartialOrd>(pos1: &mut Vector3<T>, pos2: &mut Vect
     }
 }
 
+struct WandHandler;
+
+#[with_runtime(global)]
+#[async_trait]
+impl EventHandler<PlayerInteractEvent> for WandHandler {
+    async fn handle_blocking(&self, _server: &Arc<Server>, event: &mut PlayerInteractEvent) {
+        let Some(pos) = event.clicked_pos else {
+            return;
+        };
+
+        if event.item.lock().await.item != &Item::WOODEN_AXE {
+            return;
+        }
+
+        let player_uuid = event.player.get_entity().entity_uuid;
+
+        let message = {
+            let mut selections = crate::selections().write().await;
+            let selection = selections.entry(player_uuid).or_default();
+            match event.action {
+                InteractAction::LeftClickBlock => {
+                    selection.set_pos1(pos);
+                    format!("Started new selection with vertex {}.", pos)
+                }
+                InteractAction::RightClickBlock => {
+                    selection.set_pos2(pos);
+                    format!("Added vertex {} to the selection.", pos)
+                }
+                _ => return,
+            }
+        };
+
+        event.cancelled = true;
+
+        event
+            .player
+            .send_system_message(&TextComponent::text(message))
+            .await;
+    }
+}
+
 #[plugin_method]
 async fn on_load(&mut self, context: &Context) -> Result<(), String> {
     pumpkin::init_log!();
@@ -54,6 +111,10 @@ async fn on_load(&mut self, context: &Context) -> Result<(), String> {
     commands::register_permission(context).await;
     commands::register_commmand(context).await;
     log::debug!("Commands registered!");
+
+    context
+        .register_event(Arc::new(WandHandler), EventPriority::Lowest, true)
+        .await;
 
     Ok(())
 }
@@ -91,15 +152,15 @@ impl Selection {
 }
 
 #[plugin_impl]
-pub struct MyPlugin {}
+pub struct Worldedit {}
 
-impl MyPlugin {
+impl Worldedit {
     pub fn new() -> Self {
-        MyPlugin {}
+        Worldedit {}
     }
 }
 
-impl Default for MyPlugin {
+impl Default for Worldedit {
     fn default() -> Self {
         Self::new()
     }

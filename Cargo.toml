@@ -1,16 +1,17 @@
-[package]
-name = "worldedit"
-version = "0.1.0"
+[workspace]
+resolver = "2"
+members = [
+    "runner",
+
+    "voxelsniper",
+    "worldedit",
+]
+
+[workspace.package]
+version = "0.1.0-dev+1.21.5"
 edition = "2024"
 
-# [[bin]]
-# name = "debug"
-# path = "run.rs"
-
-[lib]
-crate-type = ["cdylib"]
-
-[dependencies]
+[workspace.dependencies]
 # pumpkin            = { git = "https://github.com/Pumpkin-MC/Pumpkin.git", branch = "master", package = "pumpkin" }
 # pumpkin-api-macros = { git = "https://github.com/Pumpkin-MC/Pumpkin.git", branch = "master", package = "pumpkin-api-macros" }
 # pumpkin-data       = { git = "https://github.com/Pumpkin-MC/Pumpkin.git", branch = "master", package = "pumpkin-data" }

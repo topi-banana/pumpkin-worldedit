@@ -1,10 +1,7 @@
 [package]
-name = "worldedit"
+name = "runner"
 version = "0.1.0-dev+1.21.5"
 edition = "2024"
-
-[lib]
-crate-type = ["cdylib"]
 
 [dependencies]
 pumpkin.workspace = true
@@ -21,5 +18,4 @@ env_logger.workspace = true
 log.workspace = true
 
 uuid.workspace = true
-num-traits = "0.2.19"
 
