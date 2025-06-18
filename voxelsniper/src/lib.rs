@@ -11,15 +11,15 @@ async fn on_load(&mut self, context: &Context) -> Result<(), String> {
 }
 
 #[plugin_impl]
-pub struct Worldedit {}
+pub struct Voxelsniper {}
 
-impl Worldedit {
+impl Voxelsniper {
     pub fn new() -> Self {
-        Worldedit {}
+        Voxelsniper {}
     }
 }
 
-impl Default for Worldedit {
+impl Default for Voxelsniper {
     fn default() -> Self {
         Self::new()
     }

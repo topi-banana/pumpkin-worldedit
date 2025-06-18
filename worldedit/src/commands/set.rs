@@ -11,7 +11,7 @@ use pumpkin::entity::EntityBase;
 use pumpkin::server::Server;
 use pumpkin_protocol::client::play::CBlockUpdate;
 use pumpkin_protocol::client::play::CMultiBlockUpdate;
-use pumpkin_registry::DimensionType;
+use pumpkin_registry::VanillaDimensionType;
 use pumpkin_util::math::position::BlockPos;
 use pumpkin_util::math::vector2::Vector2;
 use pumpkin_util::math::vector3::Vector3;
@@ -49,8 +49,8 @@ impl CommandExecutor for SetExecuter {
         let world = player.world().await;
 
         let min_y = match world.dimension_type {
-            DimensionType::Overworld | DimensionType::OverworldCaves => -64,
-            DimensionType::TheEnd | DimensionType::TheNether => 0,
+            VanillaDimensionType::Overworld | VanillaDimensionType::OverworldCaves => -64,
+            VanillaDimensionType::TheEnd | VanillaDimensionType::TheNether => 0,
         };
 
         let (x1, x2) = (pos1.0.x, pos2.0.x);

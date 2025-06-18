@@ -1659,6 +1659,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "proc-macro-error-attr2"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96de42df36bb9bba5542fe9f1a054b8cc87e172759a1868aa05c1f3acc89dfc5"
+dependencies = [
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
+name = "proc-macro-error2"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11ec05c52be0a07b08061f7dd003e7d7092e0472bc731b4af7bb1ef876109802"
+dependencies = [
+ "proc-macro-error-attr2",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1669,8 +1691,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "async-trait",
  "base64",
@@ -1716,9 +1738,10 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-api-macros"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
+ "proc-macro-error2",
  "proc-macro2",
  "quote",
  "syn",
@@ -1726,8 +1749,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-config"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "log",
  "pumpkin-util",
@@ -1738,8 +1761,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-data"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -1753,8 +1776,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-inventory"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "async-trait",
  "crossbeam-utils",
@@ -1771,10 +1794,11 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-macros"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "heck",
+ "proc-macro-error2",
  "proc-macro2",
  "pumpkin-data",
  "quote",
@@ -1785,8 +1809,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-nbt"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "bytes",
  "cesu8",
@@ -1797,8 +1821,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-protocol"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "aes",
  "async-compression",
@@ -1820,8 +1844,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-registry"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "indexmap",
  "pumpkin-data",
@@ -1834,8 +1858,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-util"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "bytes",
  "colored",
@@ -1856,8 +1880,8 @@ dependencies = [
 
 [[package]]
 name = "pumpkin-world"
-version = "0.1.0-dev+1.21.5"
-source = "git+https://github.com/topi-banana/Pumpkin.git?branch=plugin%2Fplayer_interact_event#6b0f4d478945989da8dee2274abc24826e428b5c"
+version = "0.1.0-dev+1.21.6"
+source = "git+https://github.com/Pumpkin-MC/Pumpkin.git?branch=master#82948f830ebd5205d59d0ecd6e99c68c031b9777"
 dependencies = [
  "async-trait",
  "bitflags 2.9.1",

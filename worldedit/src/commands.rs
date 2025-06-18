@@ -3,6 +3,7 @@ use pumpkin_util::permission::{Permission, PermissionDefault};
 
 mod pos1;
 mod pos2;
+mod select;
 
 mod replace;
 mod set;
@@ -15,10 +16,14 @@ pub async fn register_commmand(context: &Context) {
         .register_command(pos2::init_command_tree(), "worldedit:selection.pos")
         .await;
     context
-        .register_command(set::init_command_tree(), "worldedit:region.set")
+        .register_command(select::init_command_tree(), "worldedit:selection.pos")
         .await;
+
     context
         .register_command(replace::init_command_tree(), "worldedit:region.replace")
+        .await;
+    context
+        .register_command(set::init_command_tree(), "worldedit:region.set")
         .await;
 }
 
@@ -31,9 +36,10 @@ pub async fn register_permission(context: &Context) {
         ))
         .await
         .unwrap();
+
     context
         .register_permission(Permission::new(
-            "worldedit:region.set",
+            "worldedit:region.replace",
             "",
             PermissionDefault::Allow,
         ))
@@ -41,7 +47,7 @@ pub async fn register_permission(context: &Context) {
         .unwrap();
     context
         .register_permission(Permission::new(
-            "worldedit:region.replace",
+            "worldedit:region.set",
             "",
             PermissionDefault::Allow,
         ))
