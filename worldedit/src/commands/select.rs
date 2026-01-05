@@ -1,11 +1,11 @@
-use pumpkin::command::CommandExecutor;
-use pumpkin::command::CommandResult;
-use pumpkin::command::CommandSender;
-use pumpkin::command::args::ConsumedArgs;
-use pumpkin::command::dispatcher::CommandError;
-use pumpkin::command::tree::CommandTree;
-use pumpkin::entity::EntityBase;
-use pumpkin::server::Server;
+use pumpkin::{
+    command::{
+        CommandExecutor, CommandResult, CommandSender, args::ConsumedArgs,
+        dispatcher::CommandError, tree::CommandTree,
+    },
+    entity::EntityBase,
+    server::Server,
+};
 use pumpkin_util::text::TextComponent;
 
 const NAMES: [&str; 4] = ["/sel", ";", "/desel", "/deselect"];

@@ -1,16 +1,14 @@
-use pumpkin::command::CommandExecutor;
-use pumpkin::command::CommandResult;
-use pumpkin::command::CommandSender;
-use pumpkin::command::args::Arg;
-use pumpkin::command::args::ConsumedArgs;
-use pumpkin::command::args::position_block::BlockPosArgumentConsumer;
-use pumpkin::command::dispatcher::CommandError;
-use pumpkin::command::tree::CommandTree;
-use pumpkin::command::tree::builder::argument;
-use pumpkin::entity::EntityBase;
-use pumpkin::server::Server;
-use pumpkin_util::math::position::BlockPos;
-use pumpkin_util::text::TextComponent;
+use pumpkin::{
+    command::{
+        CommandExecutor, CommandResult, CommandSender,
+        args::{Arg, ConsumedArgs, position_block::BlockPosArgumentConsumer},
+        dispatcher::CommandError,
+        tree::{CommandTree, builder::argument},
+    },
+    entity::EntityBase,
+    server::Server,
+};
+use pumpkin_util::{math::position::BlockPos, text::TextComponent};
 
 const NAMES: [&str; 1] = ["/pos2"];
 
