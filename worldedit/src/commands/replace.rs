@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use pumpkin::{
     command::{
         CommandExecutor, CommandResult, CommandSender,
@@ -14,7 +16,7 @@ use pumpkin_util::{
 };
 use pumpkin_world::world::BlockFlags;
 
-use crate::normalization_selection;
+use crate::storage::WorldEditDataStorage;
 
 const NAMES: [&str; 3] = ["/replace", "/re", "/rep"];
 
@@ -23,7 +25,17 @@ const DESCRIPTION: &str = "Replace all blocks in the selection with another";
 const ARG_DESC_FROM: &str = "The mask representing blocks to replace";
 const ARG_DESC_TO: &str = "The pattern of blocks to set";
 
-struct SetExecuter;
+struct SetExecuter {
+    storage: Arc<WorldEditDataStorage>,
+}
+
+impl SetExecuter {
+    fn new(storage: &Arc<WorldEditDataStorage>) -> Self {
+        Self {
+            storage: storage.clone(),
+        }
+    }
+}
 
 impl CommandExecutor for SetExecuter {
     fn execute<'a>(
@@ -40,10 +52,8 @@ impl CommandExecutor for SetExecuter {
             let block_from = BlockArgumentConsumer::find_arg(args, ARG_DESC_FROM)?;
             let block_to = BlockArgumentConsumer::find_arg(args, ARG_DESC_TO)?;
 
-            let (mut pos1, mut pos2) =
-                crate::fetch_selections(&player.get_entity().entity_uuid).await?;
-
-            normalization_selection(&mut pos1.0, &mut pos2.0);
+            let player_uuid = player.get_entity().entity_uuid;
+            let (pos1, pos2) = self.storage.sections.get_selection(&player_uuid).await?;
 
             let world = player.world();
 
@@ -83,9 +93,9 @@ impl CommandExecutor for SetExecuter {
     }
 }
 
-pub fn init_command_tree() -> CommandTree {
+pub fn init_command_tree(storage: &Arc<WorldEditDataStorage>) -> CommandTree {
     CommandTree::new(NAMES, DESCRIPTION).then(
         argument(ARG_DESC_FROM, BlockArgumentConsumer)
-            .then(argument(ARG_DESC_TO, BlockArgumentConsumer).execute(SetExecuter)),
+            .then(argument(ARG_DESC_TO, BlockArgumentConsumer).execute(SetExecuter::new(storage))),
     )
 }

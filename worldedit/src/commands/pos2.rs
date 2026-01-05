@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use pumpkin::{
     command::{
         CommandExecutor, CommandResult, CommandSender,
@@ -10,14 +12,25 @@ use pumpkin::{
 };
 use pumpkin_util::{math::position::BlockPos, text::TextComponent};
 
+use crate::storage::WorldEditDataStorage;
+
 const NAMES: [&str; 1] = ["/pos2"];
 
 const DESCRIPTION: &str = "Set position 2";
 
 const ARG_DESC: &str = "Coordinates to set position 2 to";
 
-struct Pos2Executer;
+struct Pos2Executer {
+    storage: Arc<WorldEditDataStorage>,
+}
 
+impl Pos2Executer {
+    fn new(storage: &Arc<WorldEditDataStorage>) -> Self {
+        Self {
+            storage: storage.clone(),
+        }
+    }
+}
 impl CommandExecutor for Pos2Executer {
     fn execute<'a>(
         &'a self,
@@ -40,19 +53,15 @@ impl CommandExecutor for Pos2Executer {
 
             let player_uuid = player.get_entity().entity_uuid;
 
-            {
-                let mut selections = crate::selections().write().await;
-                let selection = selections.entry(player_uuid).or_default();
-                selection.set_pos2(block_pos);
-            }
+            self.storage.sections.set_pos2(player_uuid, block_pos).await;
 
             Ok(())
         })
     }
 }
 
-pub fn init_command_tree() -> CommandTree {
+pub fn init_command_tree(storage: &Arc<WorldEditDataStorage>) -> CommandTree {
     CommandTree::new(NAMES, DESCRIPTION)
-        .then(argument(ARG_DESC, BlockPosArgumentConsumer).execute(Pos2Executer))
-        .execute(Pos2Executer)
+        .then(argument(ARG_DESC, BlockPosArgumentConsumer).execute(Pos2Executer::new(storage)))
+        .execute(Pos2Executer::new(storage))
 }

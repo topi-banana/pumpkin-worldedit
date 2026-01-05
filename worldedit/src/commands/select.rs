@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use pumpkin::{
     command::{
         CommandExecutor, CommandResult, CommandSender, args::ConsumedArgs,
@@ -8,11 +10,23 @@ use pumpkin::{
 };
 use pumpkin_util::text::TextComponent;
 
+use crate::storage::WorldEditDataStorage;
+
 const NAMES: [&str; 4] = ["/sel", ";", "/desel", "/deselect"];
 
 const DESCRIPTION: &str = "Choose a region selector";
 
-struct SelectExecuter;
+struct SelectExecuter {
+    storage: Arc<WorldEditDataStorage>,
+}
+
+impl SelectExecuter {
+    fn new(storage: &Arc<WorldEditDataStorage>) -> Self {
+        Self {
+            storage: storage.clone(),
+        }
+    }
+}
 
 impl CommandExecutor for SelectExecuter {
     fn execute<'a>(
@@ -29,16 +43,13 @@ impl CommandExecutor for SelectExecuter {
             sender.send_message(TextComponent::text(message)).await;
 
             let player_uuid = player.get_entity().entity_uuid;
-            {
-                let mut selections = crate::selections().write().await;
-                selections.remove(&player_uuid);
-            }
+            self.storage.sections.remove_section(&player_uuid).await;
 
             Ok(())
         })
     }
 }
 
-pub fn init_command_tree() -> CommandTree {
-    CommandTree::new(NAMES, DESCRIPTION).execute(SelectExecuter)
+pub fn init_command_tree(storage: &Arc<WorldEditDataStorage>) -> CommandTree {
+    CommandTree::new(NAMES, DESCRIPTION).execute(SelectExecuter::new(storage))
 }

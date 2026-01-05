@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use pumpkin::{
     command::{
         CommandExecutor, CommandResult, CommandSender,
@@ -14,7 +16,7 @@ use pumpkin_util::{
     text::TextComponent,
 };
 
-use crate::utils::chunked_range::ChunkedRange;
+use crate::{storage::WorldEditDataStorage, utils::chunked_range::ChunkedRange};
 
 const NAMES: [&str; 1] = ["/set"];
 
@@ -22,7 +24,17 @@ const DESCRIPTION: &str = "Sets all the blocks in the region";
 
 const ARG_DESC: &str = "The pattern of blocks to set";
 
-struct SetExecuter;
+struct SetExecuter {
+    storage: Arc<WorldEditDataStorage>,
+}
+
+impl SetExecuter {
+    fn new(storage: &Arc<WorldEditDataStorage>) -> Self {
+        Self {
+            storage: storage.clone(),
+        }
+    }
+}
 
 impl CommandExecutor for SetExecuter {
     fn execute<'a>(
@@ -38,10 +50,8 @@ impl CommandExecutor for SetExecuter {
 
             let block = BlockArgumentConsumer::find_arg(args, ARG_DESC)?;
 
-            let (mut pos1, mut pos2) =
-                crate::fetch_selections(&player.get_entity().entity_uuid).await?;
-
-            crate::normalization_selection(&mut pos1.0, &mut pos2.0);
+            let player_uuid = player.get_entity().entity_uuid;
+            let (pos1, pos2) = self.storage.sections.get_selection(&player_uuid).await?;
 
             let world = player.world();
 
@@ -137,7 +147,7 @@ impl CommandExecutor for SetExecuter {
     }
 }
 
-pub fn init_command_tree() -> CommandTree {
+pub fn init_command_tree(storage: &Arc<WorldEditDataStorage>) -> CommandTree {
     CommandTree::new(NAMES, DESCRIPTION)
-        .then(argument(ARG_DESC, BlockArgumentConsumer).execute(SetExecuter))
+        .then(argument(ARG_DESC, BlockArgumentConsumer).execute(SetExecuter::new(storage)))
 }
