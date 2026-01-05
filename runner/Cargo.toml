@@ -12,10 +12,5 @@ pumpkin-registry.workspace = true
 pumpkin-util.workspace = true
 pumpkin-world.workspace = true
 
-async-trait.workspace = true
 tokio.workspace = true
-env_logger.workspace = true
 log.workspace = true
-
-uuid.workspace = true
-

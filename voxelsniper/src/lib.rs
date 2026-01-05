@@ -1,26 +1,32 @@
-use pumpkin::plugin::Context;
-use pumpkin_api_macros::{plugin_impl, plugin_method};
+use std::sync::Arc;
 
-#[plugin_method]
-async fn on_load(&mut self, context: &Context) -> Result<(), String> {
-    pumpkin::init_log!();
+use pumpkin::plugin::{Context, Plugin, PluginFuture, PluginMetadata};
 
-    // log::debug!("Hello World");
+pub struct Voxelsniper;
 
-    Ok(())
-}
+impl Plugin for Voxelsniper {
+    fn on_load(&mut self, _server: Arc<Context>) -> PluginFuture<'_, Result<(), String>> {
+        Box::pin(async move {
+            log::info!("Hello, Pumpkin!");
 
-#[plugin_impl]
-pub struct Voxelsniper {}
+            Ok(())
+        })
+    }
 
-impl Voxelsniper {
-    pub fn new() -> Self {
-        Voxelsniper {}
+    fn on_unload(&mut self, _server: Arc<Context>) -> PluginFuture<'_, Result<(), String>> {
+        Box::pin(async { Ok(()) })
     }
 }
 
-impl Default for Voxelsniper {
-    fn default() -> Self {
-        Self::new()
-    }
+#[unsafe(no_mangle)]
+pub fn plugin() -> Box<dyn Plugin> {
+    Box::new(Voxelsniper)
 }
+
+#[unsafe(no_mangle)]
+pub static METADATA: PluginMetadata = PluginMetadata {
+    name: env!("CARGO_PKG_NAME"),
+    version: env!("CARGO_PKG_VERSION"),
+    authors: env!("CARGO_PKG_AUTHORS"),
+    description: env!("CARGO_PKG_DESCRIPTION"),
+};

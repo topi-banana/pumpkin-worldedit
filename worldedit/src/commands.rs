@@ -8,7 +8,7 @@ mod select;
 mod replace;
 mod set;
 
-pub async fn register_commmand(context: &Context) {
+pub async fn register_command(context: &Context) {
     context
         .register_command(pos1::init_command_tree(), "worldedit:selection.pos")
         .await;

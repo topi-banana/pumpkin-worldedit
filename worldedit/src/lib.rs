@@ -3,17 +3,15 @@ use std::{
     sync::{Arc, OnceLock},
 };
 
-use async_trait::async_trait;
 use pumpkin::{
     command::dispatcher::CommandError,
     entity::EntityBase,
     plugin::{
-        Context, EventHandler, EventPriority,
+        BoxFuture, Context, EventHandler, EventPriority, Plugin, PluginFuture, PluginMetadata,
         player::player_interact_event::{InteractAction, PlayerInteractEvent},
     },
     server::Server,
 };
-use pumpkin_api_macros::{plugin_impl, plugin_method, with_runtime};
 use pumpkin_data::item::Item;
 use pumpkin_util::{
     math::{position::BlockPos, vector3::Vector3},
@@ -35,18 +33,14 @@ fn selections() -> &'static RwLock<Selections> {
 
 async fn fetch_selections(player_uuid: &uuid::Uuid) -> Result<(BlockPos, BlockPos), CommandError> {
     let selections = crate::selections().read().await;
-    if let Some(&selection) = selections.get(player_uuid) {
-        if let Some((p1, p2)) = selection.get() {
-            Ok((p1, p2))
-        } else {
-            Err(CommandError::GeneralCommandIssue(
-                "Make a region selection first.".to_string(),
-            ))
-        }
+    if let Some(&selection) = selections.get(player_uuid)
+        && let Some((p1, p2)) = selection.get()
+    {
+        Ok((p1, p2))
     } else {
-        Err(CommandError::GeneralCommandIssue(
-            "Make a region selection first.".to_string(),
-        ))
+        Err(CommandError::CommandFailed(TextComponent::text(
+            "Make a region selection first.",
+        )))
     }
 }
 
@@ -64,59 +58,47 @@ fn normalization_selection<T: PartialOrd>(pos1: &mut Vector3<T>, pos2: &mut Vect
 
 struct WandHandler;
 
-#[with_runtime(global)]
-#[async_trait]
 impl EventHandler<PlayerInteractEvent> for WandHandler {
-    async fn handle_blocking(&self, _server: &Arc<Server>, event: &mut PlayerInteractEvent) {
-        let Some(pos) = event.clicked_pos else {
-            return;
-        };
+    fn handle_blocking<'a>(
+        &'a self,
+        _server: &'a Arc<Server>,
+        event: &'a mut PlayerInteractEvent,
+    ) -> BoxFuture<'a, ()> {
+        Box::pin(async move {
+            let Some(pos) = event.clicked_pos else {
+                return;
+            };
 
-        if event.item.lock().await.item != &Item::WOODEN_AXE {
-            return;
-        }
-
-        let player_uuid = event.player.get_entity().entity_uuid;
-
-        let message = {
-            let mut selections = crate::selections().write().await;
-            let selection = selections.entry(player_uuid).or_default();
-            match event.action {
-                InteractAction::LeftClickBlock => {
-                    selection.set_pos1(pos);
-                    format!("Started new selection with vertex {}.", pos)
-                }
-                InteractAction::RightClickBlock => {
-                    selection.set_pos2(pos);
-                    format!("Added vertex {} to the selection.", pos)
-                }
-                _ => return,
+            if event.item.lock().await.item != &Item::WOODEN_AXE {
+                return;
             }
-        };
 
-        event.cancelled = true;
+            let player_uuid = event.player.get_entity().entity_uuid;
 
-        event
-            .player
-            .send_system_message(&TextComponent::text(message))
-            .await;
+            let message = {
+                let mut selections = crate::selections().write().await;
+                let selection = selections.entry(player_uuid).or_default();
+                match event.action {
+                    InteractAction::LeftClickBlock => {
+                        selection.set_pos1(pos);
+                        format!("Started new selection with vertex {}.", pos)
+                    }
+                    InteractAction::RightClickBlock => {
+                        selection.set_pos2(pos);
+                        format!("Added vertex {} to the selection.", pos)
+                    }
+                    _ => return,
+                }
+            };
+
+            event.cancelled = true;
+
+            event
+                .player
+                .send_system_message(&TextComponent::text(message))
+                .await;
+        })
     }
-}
-
-#[plugin_method]
-async fn on_load(&mut self, context: &Context) -> Result<(), String> {
-    pumpkin::init_log!();
-
-    log::debug!("Registering commands...");
-    commands::register_permission(context).await;
-    commands::register_commmand(context).await;
-    log::debug!("Commands registered!");
-
-    context
-        .register_event(Arc::new(WandHandler), EventPriority::Lowest, true)
-        .await;
-
-    Ok(())
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -151,17 +133,40 @@ impl Selection {
     }
 }
 
-#[plugin_impl]
-pub struct Worldedit {}
+pub struct Worldedit;
 
-impl Worldedit {
-    pub fn new() -> Self {
-        Worldedit {}
+impl Plugin for Worldedit {
+    fn on_load(&mut self, server: Arc<Context>) -> PluginFuture<'_, Result<(), String>> {
+        Box::pin(async move {
+            log::info!("Hello, Pumpkin!");
+
+            log::debug!("Registering commands...");
+            commands::register_permission(&server).await;
+            commands::register_command(&server).await;
+            log::debug!("Commands registered!");
+
+            server
+                .register_event(Arc::new(WandHandler), EventPriority::Lowest, true)
+                .await;
+
+            Ok(())
+        })
+    }
+
+    fn on_unload(&mut self, _server: Arc<Context>) -> PluginFuture<'_, Result<(), String>> {
+        Box::pin(async { Ok(()) })
     }
 }
 
-impl Default for Worldedit {
-    fn default() -> Self {
-        Self::new()
-    }
+#[unsafe(no_mangle)]
+pub fn plugin() -> Box<dyn Plugin> {
+    Box::new(Worldedit)
 }
+
+#[unsafe(no_mangle)]
+pub static METADATA: PluginMetadata = PluginMetadata {
+    name: env!("CARGO_PKG_NAME"),
+    version: env!("CARGO_PKG_VERSION"),
+    authors: env!("CARGO_PKG_AUTHORS"),
+    description: env!("CARGO_PKG_DESCRIPTION"),
+};

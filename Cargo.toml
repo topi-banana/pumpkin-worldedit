@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 members = [
     "runner",
 
@@ -8,7 +8,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.0-dev+1.21.5"
+version = "0.1.0-dev+1.21.11"
 edition = "2024"
 
 [workspace.dependencies]
@@ -28,11 +28,8 @@ pumpkin-world      = { git = "https://github.com/Pumpkin-MC/Pumpkin.git", branch
 # pumpkin-util       = { git = "https://github.com/topi-banana/Pumpkin.git", branch = "plugin/player_interact_event", package = "pumpkin-util" }
 # pumpkin-world      = { git = "https://github.com/topi-banana/Pumpkin.git", branch = "plugin/player_interact_event", package = "pumpkin-world" }
 
-async-trait = "0.1.83"
 tokio = { version = "1.42", features = ["full"] }
 
-env_logger = "0.11.6"
 log = "0.4.22"
 uuid = "1.16.0"
 num-traits = "0.2.19"
-

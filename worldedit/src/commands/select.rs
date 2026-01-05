@@ -1,5 +1,5 @@
-use async_trait::async_trait;
 use pumpkin::command::CommandExecutor;
+use pumpkin::command::CommandResult;
 use pumpkin::command::CommandSender;
 use pumpkin::command::args::ConsumedArgs;
 use pumpkin::command::dispatcher::CommandError;
@@ -14,27 +14,28 @@ const DESCRIPTION: &str = "Choose a region selector";
 
 struct SelectExecuter;
 
-#[async_trait]
 impl CommandExecutor for SelectExecuter {
-    async fn execute<'a>(
-        &self,
-        sender: &mut CommandSender,
-        _server: &Server,
-        _args: &ConsumedArgs<'a>,
-    ) -> Result<(), CommandError> {
-        let Some(player) = sender.as_player() else {
-            return Err(CommandError::PermissionDenied);
-        };
-        let message = "Selection cleared.".to_string();
-        sender.send_message(TextComponent::text(message)).await;
+    fn execute<'a>(
+        &'a self,
+        sender: &'a CommandSender,
+        _server: &'a Server,
+        _args: &'a ConsumedArgs<'a>,
+    ) -> CommandResult<'a> {
+        Box::pin(async move {
+            let Some(player) = sender.as_player() else {
+                return Err(CommandError::PermissionDenied);
+            };
+            let message = "Selection cleared.".to_string();
+            sender.send_message(TextComponent::text(message)).await;
 
-        let player_uuid = player.get_entity().entity_uuid;
-        {
-            let mut selections = crate::selections().write().await;
-            selections.remove(&player_uuid);
-        }
+            let player_uuid = player.get_entity().entity_uuid;
+            {
+                let mut selections = crate::selections().write().await;
+                selections.remove(&player_uuid);
+            }
 
-        Ok(())
+            Ok(())
+        })
     }
 }
 
