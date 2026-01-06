@@ -8,6 +8,7 @@ use crate::storage::WorldEditDataStorage;
 mod pos1;
 mod pos2;
 mod select;
+mod wand;
 
 mod replace;
 mod set;
@@ -28,6 +29,9 @@ pub async fn register_command(context: &Context, storage: &Arc<WorldEditDataStor
             select::init_command_tree(storage),
             "worldedit:selection.pos",
         )
+        .await;
+    context
+        .register_command(wand::init_command_tree(storage), "worldedit:wand")
         .await;
 
     context
@@ -56,6 +60,14 @@ pub async fn register_permission(context: &Context) {
     context
         .register_permission(Permission::new(
             "worldedit:selection.pos",
+            "",
+            PermissionDefault::Allow,
+        ))
+        .await
+        .unwrap();
+    context
+        .register_permission(Permission::new(
+            "worldedit:wand",
             "",
             PermissionDefault::Allow,
         ))
