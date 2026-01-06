@@ -49,10 +49,7 @@ pub async fn register_command(context: &Context, storage: &Arc<WorldEditDataStor
         .await;
 
     context
-        .register_command(
-            undo::init_command_tree(storage),
-            "worldedit:history.undo.self",
-        )
+        .register_command(undo::init_command_tree(storage), "worldedit:history.undo")
         .await;
 }
 
@@ -102,7 +99,7 @@ pub async fn register_permission(context: &Context) {
 
     context
         .register_permission(Permission::new(
-            "worldedit:history.undo.self",
+            "worldedit:history.undo",
             "",
             PermissionDefault::Allow,
         ))

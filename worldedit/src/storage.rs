@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::{HashMap, VecDeque},
+    sync::Arc,
+};
 
 use pumpkin::command::dispatcher::CommandError;
 use pumpkin_util::{
@@ -92,14 +95,72 @@ fn normalization_selection<T: PartialOrd>(pos1: &mut Vector3<T>, pos2: &mut Vect
     }
 }
 
+pub struct Diff {
+    pub position: BlockPos,
+    pub before: u16,
+    // pub after: u16,
+}
+
+pub struct History {
+    prev: VecDeque<Arc<[Diff]>>,
+    next: VecDeque<Arc<[Diff]>>,
+}
+
+impl History {
+    pub fn new() -> Self {
+        Self {
+            prev: VecDeque::new(),
+            next: VecDeque::new(),
+        }
+    }
+    pub fn push(&mut self, diff: Arc<[Diff]>) {
+        self.prev.push_back(diff);
+        self.next.clear();
+    }
+}
+
+pub struct HistoryStorage {
+    histories: Mutex<HashMap<uuid::Uuid, History>>,
+}
+
+impl HistoryStorage {
+    pub fn new() -> Self {
+        Self {
+            histories: Mutex::new(HashMap::new()),
+        }
+    }
+
+    pub async fn push(&self, player_uuid: uuid::Uuid, diff: Arc<[Diff]>) {
+        self.histories
+            .lock()
+            .await
+            .entry(player_uuid)
+            .or_insert(History::new())
+            .push(diff);
+    }
+
+    pub async fn undo(&self, player_uuid: uuid::Uuid) -> Option<Arc<[Diff]>> {
+        let mut histories = self.histories.lock().await;
+        if let Some(history) = histories.get_mut(&player_uuid)
+            && let Some(diff) = history.prev.pop_back()
+        {
+            history.next.push_front(diff.clone());
+            return Some(diff);
+        }
+        None
+    }
+}
+
 pub struct WorldEditDataStorage {
     pub sections: SectionStorage,
+    pub histories: HistoryStorage,
 }
 
 impl WorldEditDataStorage {
     pub fn new() -> Self {
         Self {
             sections: SectionStorage::new(),
+            histories: HistoryStorage::new(),
         }
     }
 }

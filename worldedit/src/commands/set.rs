@@ -16,7 +16,10 @@ use pumpkin_util::{
     text::TextComponent,
 };
 
-use crate::{storage::WorldEditDataStorage, utils::chunked_range::ChunkedRange};
+use crate::{
+    storage::{Diff, WorldEditDataStorage},
+    utils::chunked_range::ChunkedRange,
+};
 
 const NAMES: [&str; 1] = ["/set"];
 
@@ -61,7 +64,7 @@ impl CommandExecutor for SetExecuter {
             let (z1, z2) = (pos1.0.z, pos2.0.z);
             let (y1, y2) = (pos1.0.y - min_y, pos2.0.y - min_y);
 
-            let mut total_cnt = 0;
+            let mut block_diff = Vec::new();
 
             /*
             for x in x1..=x2 {
@@ -72,7 +75,6 @@ impl CommandExecutor for SetExecuter {
                             world
                                 .set_block_state(&block_position, block.id, BlockFlags::FORCE_STATE)
                                 .await;
-                            total_cnt += 1;
                         }
                     }
                 }
@@ -83,7 +85,6 @@ impl CommandExecutor for SetExecuter {
                 for (chunk_z, z_range) in ChunkedRange::new(z1..=z2) {
                     let chunk = world.level.get_chunk(Vector2::new(chunk_x, chunk_z)).await;
                     let mut chunk = chunk.write().await;
-                    let mut cnt = 0;
                     for (chunk_y, y_range) in ChunkedRange::new(y1..=y2) {
                         let mut chunk_section = Vec::new();
                         if let Some(section) = chunk.section.sections.get_mut(chunk_y as usize) {
@@ -97,21 +98,24 @@ impl CommandExecutor for SetExecuter {
                                             section
                                                 .block_states
                                                 .set(x as usize, y as usize, z as usize, block.id);
-                                            chunk_section.push((
-                                                BlockPos(Vector3::new(
-                                                    (chunk_x << 4) + x,
-                                                    (chunk_y << 4) + y + min_y,
-                                                    (chunk_z << 4) + z,
-                                                )),
-                                                block.id,
+                                            let block_pos = BlockPos(Vector3::new(
+                                                (chunk_x << 4) + x,
+                                                (chunk_y << 4) + y + min_y,
+                                                (chunk_z << 4) + z,
                                             ));
+                                            block_diff.push(Diff {
+                                                position: block_pos,
+                                                before: cur_block_id,
+                                                // after: block.id,
+                                            });
+                                            chunk_section.push((block_pos, block.id));
                                         }
                                     }
                                 }
                             }
                         }
                         if !chunk_section.is_empty() {
-                            cnt += chunk_section.len();
+                            chunk.dirty = true;
                             if chunk_section.len() == 1 {
                                 let (block_pos, block_state_id) = chunk_section[0];
                                 world
@@ -127,19 +131,19 @@ impl CommandExecutor for SetExecuter {
                             }
                         }
                     }
-                    if cnt != 0 {
-                        chunk.dirty = true;
-                        total_cnt += cnt;
-                    }
-                    drop(chunk);
                 }
             }
 
             sender
                 .send_message(TextComponent::text(format!(
                     "{} blocks have been changed.",
-                    total_cnt,
+                    block_diff.len(),
                 )))
+                .await;
+
+            self.storage
+                .histories
+                .push(player_uuid, Arc::from(block_diff.into_boxed_slice()))
                 .await;
 
             Ok(())
