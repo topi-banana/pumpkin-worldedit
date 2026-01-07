@@ -19,6 +19,8 @@ pub struct Worldedit {
 impl Plugin for Worldedit {
     fn on_load(&mut self, server: Arc<Context>) -> PluginFuture<'_, Result<(), String>> {
         Box::pin(async move {
+            server.init_log();
+
             log::info!("Hello, Pumpkin!");
 
             log::debug!("Registering commands...");
