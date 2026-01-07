@@ -15,6 +15,7 @@ mod set;
 
 mod copy;
 
+mod redo;
 mod undo;
 
 pub async fn register_command(context: &Context, storage: &Arc<WorldEditDataStorage>) {
@@ -49,60 +50,24 @@ pub async fn register_command(context: &Context, storage: &Arc<WorldEditDataStor
         .await;
 
     context
+        .register_command(redo::init_command_tree(storage), "worldedit:history.redo")
+        .await;
+    context
         .register_command(undo::init_command_tree(storage), "worldedit:history.undo")
         .await;
 }
 
 pub async fn register_permission(context: &Context) {
-    context
-        .register_permission(Permission::new(
-            "worldedit:selection.pos",
-            "",
-            PermissionDefault::Allow,
-        ))
-        .await
-        .unwrap();
-    context
-        .register_permission(Permission::new(
-            "worldedit:wand",
-            "",
-            PermissionDefault::Allow,
-        ))
-        .await
-        .unwrap();
-
-    context
-        .register_permission(Permission::new(
-            "worldedit:region.replace",
-            "",
-            PermissionDefault::Allow,
-        ))
-        .await
-        .unwrap();
-    context
-        .register_permission(Permission::new(
-            "worldedit:region.set",
-            "",
-            PermissionDefault::Allow,
-        ))
-        .await
-        .unwrap();
-
-    context
-        .register_permission(Permission::new(
-            "worldedit:clipboard.copy",
-            "",
-            PermissionDefault::Allow,
-        ))
-        .await
-        .unwrap();
-
-    context
-        .register_permission(Permission::new(
-            "worldedit:history.undo",
-            "",
-            PermissionDefault::Allow,
-        ))
-        .await
-        .unwrap();
+    let permissions = [
+        Permission::new("worldedit:selection.pos", "", PermissionDefault::Allow),
+        Permission::new("worldedit:wand", "", PermissionDefault::Allow),
+        Permission::new("worldedit:region.replace", "", PermissionDefault::Allow),
+        Permission::new("worldedit:region.set", "", PermissionDefault::Allow),
+        Permission::new("worldedit:clipboard.copy", "", PermissionDefault::Allow),
+        Permission::new("worldedit:history.redo", "", PermissionDefault::Allow),
+        Permission::new("worldedit:history.undo", "", PermissionDefault::Allow),
+    ];
+    for permission in permissions {
+        context.register_permission(permission).await.unwrap();
+    }
 }

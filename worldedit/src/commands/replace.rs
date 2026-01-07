@@ -16,7 +16,7 @@ use pumpkin_util::{
 };
 use pumpkin_world::world::BlockFlags;
 
-use crate::storage::WorldEditDataStorage;
+use crate::storage::{Diff, WorldEditDataStorage};
 
 const NAMES: [&str; 3] = ["/replace", "/re", "/rep"];
 
@@ -61,13 +61,18 @@ impl CommandExecutor for SetExecuter {
             let (z1, z2) = (pos1.0.z, pos2.0.z);
             let (y1, y2) = (pos1.0.y, pos2.0.y);
 
-            let mut cnt = 0;
+            let mut block_diff = Vec::new();
 
             for x in x1..=x2 {
                 for y in y1..=y2 {
                     for z in z1..=z2 {
                         let block_position = BlockPos(Vector3 { x, y, z });
-                        if world.get_block_state(&block_position).await.id != block_from.id {
+                        if world.get_block_state(&block_position).await.id == block_from.id {
+                            block_diff.push(Diff {
+                                position: block_position,
+                                before: block_from.id,
+                                after: block_to.id,
+                            });
                             world
                                 .set_block_state(
                                     &block_position,
@@ -75,7 +80,6 @@ impl CommandExecutor for SetExecuter {
                                     BlockFlags::FORCE_STATE,
                                 )
                                 .await;
-                            cnt += 1;
                         }
                     }
                 }
@@ -84,8 +88,13 @@ impl CommandExecutor for SetExecuter {
             sender
                 .send_message(TextComponent::text(format!(
                     "{} blocks have been changed.",
-                    cnt
+                    block_diff.len()
                 )))
+                .await;
+
+            self.storage
+                .histories
+                .push(player_uuid, Arc::from(block_diff.into_boxed_slice()))
                 .await;
 
             Ok(())

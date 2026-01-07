@@ -98,7 +98,7 @@ fn normalization_selection<T: PartialOrd>(pos1: &mut Vector3<T>, pos2: &mut Vect
 pub struct Diff {
     pub position: BlockPos,
     pub before: u16,
-    // pub after: u16,
+    pub after: u16,
 }
 
 pub struct History {
@@ -145,6 +145,17 @@ impl HistoryStorage {
             && let Some(diff) = history.prev.pop_back()
         {
             history.next.push_front(diff.clone());
+            return Some(diff);
+        }
+        None
+    }
+
+    pub async fn redo(&self, player_uuid: uuid::Uuid) -> Option<Arc<[Diff]>> {
+        let mut histories = self.histories.lock().await;
+        if let Some(history) = histories.get_mut(&player_uuid)
+            && let Some(diff) = history.next.pop_front()
+        {
+            history.prev.push_back(diff.clone());
             return Some(diff);
         }
         None

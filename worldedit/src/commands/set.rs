@@ -106,7 +106,7 @@ impl CommandExecutor for SetExecuter {
                                             block_diff.push(Diff {
                                                 position: block_pos,
                                                 before: cur_block_id,
-                                                // after: block.id,
+                                                after: block.id,
                                             });
                                             chunk_section.push((block_pos, block.id));
                                         }
