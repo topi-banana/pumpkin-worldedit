@@ -51,7 +51,7 @@ impl CommandExecutor for SetExecuter {
                 return Err(CommandError::PermissionDenied);
             };
 
-            let block = BlockArgumentConsumer::find_arg(args, ARG_DESC)?;
+            let block_state = BlockArgumentConsumer::find_arg(args, ARG_DESC)?.default_state;
 
             let player_uuid = player.get_entity().entity_uuid;
             let (pos1, pos2) = self.storage.sections.get_selection(&player_uuid).await?;
@@ -94,10 +94,13 @@ impl CommandExecutor for SetExecuter {
                                         let cur_block_id = section
                                             .block_states
                                             .get(x as usize, y as usize, z as usize);
-                                        if cur_block_id != block.id {
-                                            section
-                                                .block_states
-                                                .set(x as usize, y as usize, z as usize, block.id);
+                                        if cur_block_id != block_state.id {
+                                            section.block_states.set(
+                                                x as usize,
+                                                y as usize,
+                                                z as usize,
+                                                block_state.id,
+                                            );
                                             let block_pos = BlockPos(Vector3::new(
                                                 (chunk_x << 4) + x,
                                                 (chunk_y << 4) + y + min_y,
@@ -106,9 +109,9 @@ impl CommandExecutor for SetExecuter {
                                             block_diff.push(Diff {
                                                 position: block_pos,
                                                 before: cur_block_id,
-                                                after: block.id,
+                                                after: block_state.id,
                                             });
-                                            chunk_section.push((block_pos, block.id));
+                                            chunk_section.push((block_pos, block_state.id));
                                         }
                                     }
                                 }

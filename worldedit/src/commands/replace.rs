@@ -49,8 +49,8 @@ impl CommandExecutor for SetExecuter {
                 return Err(CommandError::PermissionDenied);
             };
 
-            let block_from = BlockArgumentConsumer::find_arg(args, ARG_DESC_FROM)?;
-            let block_to = BlockArgumentConsumer::find_arg(args, ARG_DESC_TO)?;
+            let block_from = BlockArgumentConsumer::find_arg(args, ARG_DESC_FROM)?.default_state;
+            let block_to = BlockArgumentConsumer::find_arg(args, ARG_DESC_TO)?.default_state;
 
             let player_uuid = player.get_entity().entity_uuid;
             let (pos1, pos2) = self.storage.sections.get_selection(&player_uuid).await?;
