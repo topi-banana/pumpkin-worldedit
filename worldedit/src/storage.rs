@@ -162,9 +162,44 @@ impl HistoryStorage {
     }
 }
 
+#[derive(Clone)]
+pub struct ClipBoard {
+    data: Arc<[(BlockPos, u16)]>,
+}
+
+impl ClipBoard {
+    pub fn new(data: Vec<(BlockPos, u16)>) -> Self {
+        Self {
+            data: Arc::from(data.into_boxed_slice()),
+        }
+    }
+    pub fn get_data(&self) -> &[(BlockPos, u16)] {
+        self.data.as_ref()
+    }
+}
+
+pub struct ClipboardStorage {
+    clipboard: Mutex<HashMap<uuid::Uuid, ClipBoard>>,
+}
+
+impl ClipboardStorage {
+    pub fn new() -> Self {
+        Self {
+            clipboard: Mutex::new(HashMap::new()),
+        }
+    }
+    pub async fn push(&self, player_uuid: uuid::Uuid, data: ClipBoard) {
+        self.clipboard.lock().await.insert(player_uuid, data);
+    }
+    pub async fn get(&self, player_uuid: uuid::Uuid) -> Option<ClipBoard> {
+        self.clipboard.lock().await.get(&player_uuid).cloned()
+    }
+}
+
 pub struct WorldEditDataStorage {
     pub sections: SectionStorage,
     pub histories: HistoryStorage,
+    pub clipboard: ClipboardStorage,
 }
 
 impl WorldEditDataStorage {
@@ -172,6 +207,7 @@ impl WorldEditDataStorage {
         Self {
             sections: SectionStorage::new(),
             histories: HistoryStorage::new(),
+            clipboard: ClipboardStorage::new(),
         }
     }
 }

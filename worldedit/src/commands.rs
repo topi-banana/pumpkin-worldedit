@@ -14,6 +14,7 @@ mod replace;
 mod set;
 
 mod copy;
+mod paste;
 
 mod redo;
 mod undo;
@@ -47,6 +48,12 @@ pub async fn register_command(context: &Context, storage: &Arc<WorldEditDataStor
 
     context
         .register_command(copy::init_command_tree(storage), "worldedit:clipboard.copy")
+        .await;
+    context
+        .register_command(
+            paste::init_command_tree(storage),
+            "worldedit:clipboard.paste",
+        )
         .await;
 
     context

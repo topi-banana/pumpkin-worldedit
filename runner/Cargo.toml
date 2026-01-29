@@ -8,7 +8,6 @@ pumpkin.workspace = true
 pumpkin-api-macros.workspace = true
 pumpkin-data.workspace = true
 pumpkin-protocol.workspace = true
-pumpkin-registry.workspace = true
 pumpkin-util.workspace = true
 pumpkin-world.workspace = true
 

@@ -129,7 +129,7 @@ impl CommandExecutor for SetExecuter {
                                     .await;
                             } else if !chunk_section.is_empty() {
                                 world
-                                    .broadcast_packet_all(&CMultiBlockUpdate::new(chunk_section))
+                                    .broadcast_packet_all(&CMultiBlockUpdate::new(&chunk_section))
                                     .await;
                             }
                         }
